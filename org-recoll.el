@@ -32,7 +32,7 @@ default for convenient paging"
   :group 'org-recoll
   :type 'integer)
 
-(defcustom org-recoll-command-invocation "recoll -t -A"
+(defcustom org-recoll-command-invocation "recoll -t -m"
   "This is the stem of the recoll shell command called by ORG-RECOLL-SEARCH.
 Change this if your recoll executable is not in your path.
 CAUTION: At present the parsing below expects a specific output
@@ -296,14 +296,36 @@ If PAGING is t this indicates that the function is being called to page through 
   (insert (shell-command-to-string (concat org-recoll-command-invocation " -Q '" (org-recoll-sanitize-single-quote squery) "'")))
      (insert (concat "\n" "Results: " (number-to-string org-recoll-start-of-current-page) " - " (number-to-string org-recoll-end-of-current-page) "\n\n"))
      ;;Print results
-     (insert (shell-command-to-string (concat org-recoll-command-invocation " -n '" (number-to-string org-recoll-start-of-current-page) "-" (number-to-string org-recoll-results-num) "' -q " "'" (org-recoll-sanitize-single-quote squery) "'" " | tail +3")))
+     (org-recoll-process-results (shell-command-to-string (concat org-recoll-command-invocation " -n '" (number-to-string org-recoll-start-of-current-page) "-" (number-to-string org-recoll-results-num) "' -q " "'" (org-recoll-sanitize-single-quote squery) "'" )))
   ;;Format
-  (org-recoll-format-results)
+  ;; (org-recoll-format-results)
   ;;Prevent editing
   (read-only-mode)
   ;;Add post-processing/file-search hook
   (add-hook 'org-follow-link-hook (lambda () (org-recoll-post-open-actions (org-recoll-reformat-for-file-search squery))) nil t))
 
+
+(defun org-recoll-process-results (str)
+  (let ((res nil))
+    (with-temp-buffer
+      (insert str)
+      (beginning-of-buffer)
+      (while (re-search-forward (rx "application/pdf") (point-max) t)
+        (let* ((author (progn (re-search-forward (rx bol "author = " (group (zero-or-more  nonl))))
+                             (match-string-no-properties 1)))
+              (title (progn (re-search-forward (rx bol "title = " (group (zero-or-more  nonl))))
+                            (match-string-no-properties 1)))
+              (url (progn (re-search-forward (rx bol "url = " (group (zero-or-more  nonl))))
+                          (match-string-no-properties 1)))
+              )
+          (setq url (s-replace "file://" "file+emacs:" url))
+          (push (list author title url) res)
+          )
+        )
+      )
+    (--map (insert (-let (((author title url) it)) (concat "* " author "\n - " "[[" url "]["  title "]]\n")) ) res) 
+    )
+  )
 ;;
 ;; User-Facing Functions
 ;;
