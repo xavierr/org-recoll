@@ -310,12 +310,12 @@ If PAGING is t this indicates that the function is being called to page through 
     (with-temp-buffer
       (insert str)
       (beginning-of-buffer)
-      (while (re-search-forward (rx "application/pdf") (point-max) t)
-        (let* ((author (progn (re-search-forward (rx bol "author = " (group (zero-or-more  nonl))))
+      (while (re-search-forward (rx bol "application/pdf") (point-max) t)
+        (let* ((author (save-excursion (re-search-forward (rx bol "author = " (group (zero-or-more  nonl))))
                              (match-string-no-properties 1)))
-              (title (progn (re-search-forward (rx bol "title = " (group (zero-or-more  nonl))))
+              (title (save-excursion (re-search-forward (rx bol "title = " (group (zero-or-more  nonl))))
                             (match-string-no-properties 1)))
-              (url (progn (re-search-forward (rx bol "url = " (group (zero-or-more  nonl))))
+              (url (save-excursion (re-search-forward (rx bol "url = " (group (zero-or-more  nonl))))
                           (match-string-no-properties 1)))
               )
           (setq url (s-replace "file://" "file+emacs:" url))
@@ -374,3 +374,4 @@ If SQUERY is passed offer it as a default."
 (provide 'org-recoll)
 
 ;;; org-recoll.el ends here
+
