@@ -294,9 +294,9 @@ If PAGING is t this indicates that the function is being called to page through 
   (if (featurep 'flyspell) (flyspell-mode -1))
   ;;Print the query header and result count
   (insert (shell-command-to-string (concat org-recoll-command-invocation " -Q '" (org-recoll-sanitize-single-quote squery) "'")))
-     (insert (concat "\n" "Results: " (number-to-string org-recoll-start-of-current-page) " - " (number-to-string org-recoll-end-of-current-page) "\n\n"))
-     ;;Print results
-     (org-recoll-process-results (shell-command-to-string (concat org-recoll-command-invocation " -n '" (number-to-string org-recoll-start-of-current-page) "-" (number-to-string org-recoll-results-num) "' -q " "'" (org-recoll-sanitize-single-quote squery) "'" )))
+  (insert (concat "\n" "Results: " (number-to-string org-recoll-start-of-current-page) " - " (number-to-string org-recoll-end-of-current-page) "\n\n"))
+  ;;Print results
+  (org-recoll-process-results (shell-command-to-string (concat org-recoll-command-invocation " -n '" (number-to-string org-recoll-start-of-current-page) "-" (number-to-string org-recoll-results-num) "' -q " "'" (org-recoll-sanitize-single-quote squery) "'" )))
   ;;Format
   ;; (org-recoll-format-results)
   ;;Prevent editing
